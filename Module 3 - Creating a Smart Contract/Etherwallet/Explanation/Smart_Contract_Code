@@ -1,0 +1,56 @@
+// StuxCoin ICO
+
+// Version of compiler
+// SPDX-License-Identifier: MIT
+pragma solidity 0.4.11;
+
+contract stuxcoin_ico {
+
+    // Introducing the max number of Stuxcoins availablefor sale
+    uint public max_stuxcoins = 100;
+
+    // Introducing the Stuxcoins to USD coversion rate
+    uint public usd_to_stuxcoins = 1;
+
+    // Introducing the total number of Stuxcoins that have been bought by Investors
+    uint public total_stuxcoins_bought = 0;
+
+    // Mapping from the Investor address to its equity in Stuxcoins and USD
+    mapping (address => uint) equity_stuxcoins;
+    mapping (address => uint) equity_usd;
+
+    // Checking if an Investor can buy Stuxcoins
+    modifier can_buy_stuxcoins(uint usd_invested) {
+        require(usd_invested * usd_to_stuxcoins + total_stuxcoins_bought <= max_stuxcoins);
+        _;
+    }
+
+    // Getting the equity in Stuxcoins of an Investot
+    function equity_in_stuxcoins(address investor) external constant returns (uint) {
+        return equity_stuxcoins[investor];
+    }
+    
+    // Getting the equity in USD of an Investot
+    function equity_in_usd(address investor) external constant returns (uint) {
+        return equity_usd[investor];
+    }
+
+    // Buying Stuxcoins
+    // Depending on the conversion rate - this line might require the following extention
+    // Example == equity_stuxcoins[investor] += stuxcoins_bought / 100;
+    // We did not add "/ 100" as the conversion rate is 1 to 1 between USD & Stuxcoin
+    function buy_stuxcoins(address investor, uint usd_invested) external 
+    can_buy_stuxcoins(usd_invested) {
+        uint stuxcoins_bought = usd_invested * usd_to_stuxcoins;
+        equity_stuxcoins[investor] += stuxcoins_bought;
+        equity_usd[investor] = equity_stuxcoins[investor];
+        total_stuxcoins_bought += stuxcoins_bought;
+    }
+
+    // Selling Stuxcoins
+    function sell_stuxcoins(address investor, uint stuxcoins_sold) external {
+        equity_stuxcoins[investor] -= stuxcoins_sold;
+        equity_usd[investor] = equity_stuxcoins[investor];
+        total_stuxcoins_bought -= stuxcoins_sold;
+    }
+}
